@@ -18,7 +18,7 @@ use tower_http::services::ServeFile;
 use crate::auth::AuthUser;
 use crate::error::{AppError, AppResult};
 use crate::state::AppState;
-use crate::transcode::SessionInput;
+use crate::transcode::{SegmentError, SessionInput};
 
 pub fn routes() -> Router<AppState> {
     Router::new()
@@ -204,9 +204,14 @@ async fn segment(
 ) -> AppResult<Response> {
     check_session(&state, &user, &session).await?;
     let index = parse_segment_name(&segment).ok_or(AppError::NotFound)?;
+    // Only a missing session or segment is a 404. A transcoder failure is a
+    // 500, so the player reports a server problem instead of a missing file.
     let path = state.transcodes.segment(&session, index).await.map_err(|e| {
         tracing::warn!(session, index, error = %e, "segment failed");
-        AppError::NotFound
+        match e {
+            SegmentError::NoSession | SegmentError::OutOfRange => AppError::NotFound,
+            SegmentError::Failed(e) => AppError::Internal(e),
+        }
     })?;
     let bytes = tokio::fs::read(&path).await?;
     Ok(([(header::CONTENT_TYPE, "video/mp2t")], bytes).into_response())
