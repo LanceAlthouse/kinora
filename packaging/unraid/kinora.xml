@@ -1,24 +1,38 @@
 <?xml version="1.0"?>
+<!--
+  Kinora template for Unraid.
+  Published to Community Applications from LanceAlthouse/unraid-templates
+  (templates/kinora.xml). Keep the two copies identical. See docs/unraid.md.
+-->
 <Container version="2">
   <Name>kinora</Name>
   <Repository>ghcr.io/lancealthouse/kinora:latest</Repository>
-  <Registry>https://github.com/lancealthouse/kinora/pkgs/container/kinora</Registry>
+  <Registry>https://github.com/LanceAlthouse/kinora/pkgs/container/kinora</Registry>
   <Network>bridge</Network>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/lancealthouse/kinora</Support>
-  <Project>https://github.com/lancealthouse/kinora</Project>
-  <Overview>Kinora is a lightweight self-hosted media server: scans your movies and TV, fetches artwork from TMDB, and streams to any browser with hardware transcoding (Intel, AMD, NVIDIA). For NVIDIA, install the Nvidia Driver plugin and add --runtime=nvidia to Extra Parameters.</Overview>
-  <Icon>https://raw.githubusercontent.com/LanceAlthouse/kinora/main/packaging/unraid/icon.png</Icon>
-  <Category>MediaServer:Video</Category>
+  <Support>https://github.com/LanceAlthouse/kinora/issues</Support>
+  <Project>https://github.com/LanceAlthouse/kinora</Project>
+  <ReadMe>https://github.com/LanceAlthouse/kinora/blob/main/docs/unraid.md</ReadMe>
+  <License>GPL-2.0-only</License>
+  <Overview>Kinora is a lightweight, open-source media server written in Rust. It scans your movies and TV shows, fetches artwork and descriptions from TMDB, and streams to any browser or Android TV with hardware transcoding on Intel, AMD and NVIDIA GPUs, including HDR and Dolby Vision tone mapping.[br][br]
+Keep the Config path on a pool (SSD), not on the array: the database is SQLite and is slow through /mnt/user. If your pool is not named "cache", change /mnt/cache to your pool's name.[br][br]
+Intel or AMD GPU: set the GPU device field to /dev/dri.[br]
+NVIDIA GPU: install the Nvidia Driver plugin, then add --runtime=nvidia to Extra Parameters (switch on Advanced View).</Overview>
+  <Category>MediaServer:Video MediaApp:Video</Category>
   <WebUI>http://[IP]:[PORT:8420]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/LanceAlthouse/unraid-templates/main/templates/kinora.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/LanceAlthouse/kinora/main/packaging/unraid/icon.png</Icon>
   <ExtraParams/>
-  <DateInstalled/>
+  <PostArgs/>
+  <Requires>Optional, for NVIDIA hardware transcoding: the Nvidia Driver plugin, plus --runtime=nvidia in Extra Parameters.</Requires>
   <Config Name="Web UI port" Target="8420" Default="8420" Mode="tcp" Description="Port for the web app." Type="Port" Display="always" Required="true" Mask="false">8420</Config>
-  <Config Name="Config" Target="/config" Default="/mnt/user/appdata/kinora" Mode="rw" Description="Database, settings and themes." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/kinora</Config>
-  <Config Name="Media" Target="/media" Default="/mnt/user/media" Mode="ro" Description="Your media. Add libraries from /media in Admin → Libraries." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/media</Config>
-  <Config Name="Transcode temp" Target="/transcode" Default="/tmp/kinora" Mode="rw" Description="Temporary transcode files. /tmp on Unraid is RAM, which is ideal." Type="Path" Display="always" Required="false" Mask="false">/tmp/kinora</Config>
-  <Config Name="Intel/AMD GPU" Target="/dev/dri" Default="/dev/dri" Mode="" Description="Hardware transcoding on Intel or AMD. Clear this if you have no iGPU/AMD GPU." Type="Device" Display="always" Required="false" Mask="false">/dev/dri</Config>
-  <Config Name="TMDB API key" Target="TMDB_API_KEY" Default="" Mode="" Description="Optional. Free from themoviedb.org. Can also be set later in Admin → Modules." Type="Variable" Display="always" Required="false" Mask="true"/>
-  <Config Name="NVIDIA GPU" Target="NVIDIA_VISIBLE_DEVICES" Default="all" Mode="" Description="With the Nvidia Driver plugin: 'all' or a GPU UUID. Also add --runtime=nvidia to Extra Parameters." Type="Variable" Display="advanced" Required="false" Mask="false">all</Config>
+  <Config Name="Config" Target="/config" Default="/mnt/cache/appdata/kinora" Mode="rw" Description="Database, settings, artwork cache and themes. Use a pool path (/mnt/cache/... or your pool's name), not /mnt/user: SQLite through the /mnt/user share layer makes the app slow. Back this folder up." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/kinora</Config>
+  <Config Name="Media" Target="/media" Default="/mnt/user/media" Mode="ro" Description="Your movies and shows (read-only). Add libraries from /media in Admin, Libraries." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/media</Config>
+  <Config Name="Transcode temp" Target="/transcode" Default="/mnt/cache/transcode/kinora" Mode="rw" Description="Temporary transcode segments. Use an SSD pool path. /tmp/kinora (RAM) also works if you have plenty of free memory; 4K transcodes can use several GB." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/transcode/kinora</Config>
+  <Config Name="Intel/AMD GPU" Target="/dev/dri" Default="/dev/dri" Mode="" Description="Hardware transcoding on Intel Quick Sync or AMD. Enter /dev/dri if you have one; leave empty otherwise (the container will not start if /dev/dri does not exist)." Type="Device" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="TMDB API key" Target="TMDB_API_KEY" Default="" Mode="" Description="Optional. Free from themoviedb.org. Can also be set later in Admin, Modules." Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="NVIDIA visible devices" Target="NVIDIA_VISIBLE_DEVICES" Default="all" Mode="" Description="NVIDIA only (needs the Nvidia Driver plugin and --runtime=nvidia in Extra Parameters): all, or one GPU UUID from the plugin's settings page." Type="Variable" Display="advanced" Required="false" Mask="false">all</Config>
+  <Config Name="NVIDIA driver capabilities" Target="NVIDIA_DRIVER_CAPABILITIES" Default="all" Mode="" Description="NVIDIA only. Keep this at all: HDR and Dolby Vision tone mapping needs the graphics (Vulkan) capability." Type="Variable" Display="advanced" Required="false" Mask="false">all</Config>
+  <Config Name="Log level" Target="KINORA_LOG" Default="info,tower_http=warn,sqlx=warn" Mode="" Description="Log filter. Use debug when reporting a problem." Type="Variable" Display="advanced" Required="false" Mask="false">info,tower_http=warn,sqlx=warn</Config>
 </Container>

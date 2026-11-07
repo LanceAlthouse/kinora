@@ -41,15 +41,10 @@ There's also a [docker-compose.yml](docker-compose.yml) and an
 
 ### Unraid
 
-1. Copy `packaging/unraid/kinora.xml` to
-   `/boot/config/plugins/dockerMan/templates-user/my-kinora.xml`.
-2. Docker tab → **Add Container** → pick **kinora** from the template list.
-3. Check the media path, then **Apply**.
-
-While the repository is private, the image is private too: either run
-`docker login ghcr.io` once on the server (username = your GitHub user,
-password = a token with `read:packages`), or make the package public under
-GitHub → Packages → kinora → Package settings.
+Add the [template](packaging/unraid/kinora.xml) by hand, or, once it is listed
+in Community Applications, install **Kinora** from the **Apps** tab. Keep `/config` on a pool such
+as `/mnt/cache/appdata/kinora`, not `/mnt/user`. Paths, GPUs and publishing
+steps: [docs/unraid.md](docs/unraid.md).
 
 ### Reverse proxies and Tailscale
 
